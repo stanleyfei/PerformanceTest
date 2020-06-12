@@ -1,0 +1,23 @@
+import java.lang.management.ManagementFactory.getThreadMXBean
+  if (!getThreadMXBean.isThreadCpuTimeSupported)
+    throw new UnsupportedOperationException(
+      "JVM does not support measuring thread CPU-time")
+
+  var finalCpuTime: Option[Long] = None
+  val thread = new Thread {
+    override def run(): Unit = {
+      f
+      finalCpuTime = Some(getThreadMXBean.getThreadCpuTime(
+        Thread.currentThread.getId))
+    }
+  }
+  thread.start()
+
+  while (finalCpuTime.isEmpty && thread.isAlive) {
+    Thread.sleep(100)
+  }
+
+  java.time.Duration.ofNanos(finalCpuTime.getOrElse {
+    throw new Exception("The page is not working")
+  })
+}
